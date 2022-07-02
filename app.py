@@ -35,6 +35,47 @@ def menu():
                 \rPress enter to try again.            
             ''')
 
+def submenu():
+    while True:
+        print('''
+            \nPROGRAMMING BOOKS
+            \r1)Edit
+            \r2)Delete
+            \r3)Return to Main Menu'''
+              )
+        choice = input('What would you like to do?  ')
+        if choice in ['1', '2', '3', '4', '5']:
+            return choice
+        else:
+            input('''
+                \rPlease choose an option from those listed above.
+                \rA number 1-5.
+                \rPress enter to try again.            
+            ''')
+def edit_check(column_name, current_value):
+    print(f'\n****** EDIT {column_name} ******')
+    if column_name == 'Price':
+        print(f'\rCurrent Value: {current_value / 100}')
+    elif column_name == 'Published':
+        cr_date = datetime.datetime.strptime(current_value, '%Y-%m-%d')
+        print(f'\rCurrent Value: {cr_date.strftime("%B %d, %Y")}')
+    else:
+        print(f'\rCurrent Value: {current_value}')
+
+    if column_name == 'Published' or column_name == 'Price':
+        while True:
+            changes = input('What would you like to change the value to? ')
+            if column_name == 'Published':
+                changes = clean_date(changes)
+                if type(changes) == datetime.date:
+                    return changes
+            elif column_name == 'Price':
+                changes = clean_price(changes)
+                if type(changes) == int:
+                    return changes
+    else:
+        return input('What would you like to change the value to? ')
+
 def add_csv():
     with open('suggested_books.csv') as csvfile:
         data = csv.reader(csvfile)
@@ -150,10 +191,26 @@ def app():
                 \n{the_book.title} by {the_book.author} 
                 \rPublished: {the_book.date_published}
                 \rPrice: {the_book.price / 100}''')
-            input('Press Enter to return to the menu!')
-            pass
+            sub_choice = submenu()
+            if sub_choice == '1':
+                # edit
+                the_book.title = edit_check('Title', the_book.title)
+                the_book.author = edit_check('Author', the_book.author)
+                the_book.date_published = edit_check('Published', the_book.date_published)
+                the_book.price = edit_check('Price', the_book.price)
+                session.commit()
+                print('Book Updated!')
+                time.sleep(1.5)
+                pass
+            elif sub_choice == '2':
+                # delete
+                session.delete(the_book)
+                session.commit()
+                print('Book Deleted!')
+                time.sleep(1.5)
         elif choice == '4':
             # Book Analysis
+
             pass
         else:
             print('GOODBYE~!')
